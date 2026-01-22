@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Premium Boutique AI Assistant</title>
+<title>Smart Boutique AI Assistant</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -104,17 +104,14 @@ input{
 }
 </style>
 </head>
-
 <body>
 
 <div class="chat">
   <div class="header">
-    🌸 Boutique AI Stylist<br>
+    🌸 Smart Boutique AI<br>
     <span class="cart">🛒 Cart: <span id="cartCount">0</span></span>
   </div>
-
   <div class="messages" id="chat"></div>
-
   <div class="input">
     <input id="input" placeholder="Type here..." />
     <button class="send" onclick="send()">Send</button>
@@ -126,16 +123,18 @@ const chat=document.getElementById("chat");
 const input=document.getElementById("input");
 const cartCount=document.getElementById("cartCount");
 
+let username = "";
+let cart=[];
+let selectedProduct=null;
+let selectedSize=null;
+let waitingOrder=false;
+let loginStage=true;
+
 const inventory=[
  {id:1,name:"Velvet Anarkali",price:"₹4,200",sizes:["S","M","L"],colors:["Maroon","Black"]},
  {id:2,name:"Silk Party Gown",price:"₹5,500",sizes:["M","L"],colors:["Gold","Pink"]},
  {id:3,name:"Floral Summer Dress",price:"₹2,800",sizes:["S","M","L"],colors:["Yellow","White"]}
 ];
-
-let cart=[];
-let selectedProduct=null;
-let selectedSize=null;
-let waitingOrder=false;
 
 function add(text,type){
   const d=document.createElement("div");
@@ -157,8 +156,7 @@ function typing(){
 function showCatalog(){
   let html="<b>Our Exclusive Collection:</b>";
   inventory.forEach(p=>{
-    html+=`
-    <div class="product" onclick="selectProduct(${p.id})">
+    html+=`<div class="product" onclick="selectProduct(${p.id})">
       👗 <b>${p.name}</b><br>💰 ${p.price}
     </div>`;
   });
@@ -169,22 +167,18 @@ function selectProduct(id){
   selectedProduct=inventory.find(p=>p.id===id);
   selectedSize=null;
   add(`I want ${selectedProduct.name}`,"user");
-  setTimeout(()=>{
-    add(`
-      <b>${selectedProduct.name}</b><br>
-      Price: ${selectedProduct.price}<br><br>
-      <b>Select Size:</b><br>
+  setTimeout(()=>{ 
+    add(`<b>${selectedProduct.name}</b><br>Price: ${selectedProduct.price}<br><b>Select Size:</b><br>
       ${selectedProduct.sizes.map(s=>`<button class="btn" onclick="selectSize('${s}')">${s}</button>`).join("")}
     `,"bot");
-  },400);
+  },300);
 }
 
 function selectSize(size){
   selectedSize=size;
   add(size,"user");
-  setTimeout(()=>{
-    add(`
-      <b>Select Color:</b><br>
+  setTimeout(()=>{ 
+    add(`<b>Select Color:</b><br>
       ${selectedProduct.colors.map(c=>`<button class="btn" onclick="addCart('${c}')">${c}</button>`).join("")}
     `,"bot");
   },300);
@@ -195,19 +189,31 @@ function addCart(color){
   cart.push({name:selectedProduct.name,size:selectedSize,color});
   cartCount.textContent=cart.length;
   setTimeout(()=>{
-    add(`
-      ✅ <b>Added to Cart</b><br>
-      👗 ${selectedProduct.name}<br>
-      📏 ${selectedSize} | 🎨 ${color}<br><br>
+    add(`✅ <b>Added to Cart</b><br>
+      👗 ${selectedProduct.name}<br>📏 ${selectedSize} | 🎨 ${color}<br>
       <button class="btn" onclick="showCatalog()">Continue Shopping</button>
       <button class="btn" onclick="track()">Track Order</button>
+      <button class="btn" onclick="checkout()">Checkout</button>
     `,"bot");
-  },400);
+  },300);
 }
 
 function track(){
   waitingOrder=true;
   add("Please enter your Order ID 📦","bot");
+}
+
+function checkout(){
+  if(cart.length===0){ add("Your cart is empty 💔","bot"); return; }
+  let summary = "<b>Checkout Summary:</b><br>";
+  cart.forEach((p,i)=> summary += `${i+1}. ${p.name} - ${p.size} - ${p.color}<br>`);
+  add(summary + `<br><button class="btn" onclick="confirmCheckout()">Confirm Payment</button>`,"bot");
+}
+
+function confirmCheckout(){
+  add(`💳 Payment Successful! Thank you ${username || ""} 🥰<br>Your order will arrive in 3-5 days.`,"bot");
+  cart=[];
+  cartCount.textContent=0;
 }
 
 function send(){
@@ -221,12 +227,19 @@ function send(){
   setTimeout(()=>{
     wait.remove();
 
+    if(loginStage){
+      username=text;
+      loginStage=false;
+      add(`Hey ${username}! 👋 Welcome to Smart Boutique AI.<br>Type <b>show collection</b> to browse dresses or <b>track order</b>.`,"bot");
+      return;
+    }
+
     if(waitingOrder){
       waitingOrder=false;
       add(`🚚 Order <b>${text}</b> is out for delivery!`,"bot");
     }
     else if(t.includes("hi")||t.includes("hello")||t.includes("hey")){
-      add("Hey! 👋 What can I help you with today? 💕","bot");
+      add(`Hey ${username}! 👋 How can I help you today? 💕`,"bot");
     }
     else if(t.includes("show")||t.includes("collection")){
       showCatalog();
@@ -237,14 +250,17 @@ function send(){
     else if(t.includes("cart")){
       add(`🛒 You have ${cart.length} item(s) in your cart.`,"bot");
     }
+    else if(t.includes("checkout")){
+      checkout();
+    }
     else{
-      add("Sorry, I only assist with boutique shopping, orders, and collections 💕<br>Try: <b>show collection</b> or <b>track order</b>","bot");
+      add("Sorry, I only assist with boutique shopping, cart, checkout & orders 💕<br>Try: <b>show collection</b> or <b>track order</b>","bot");
     }
   },600);
 }
 
 window.onload=()=>{
-  add("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses.","bot");
+  add("Welcome! Please enter your name to get started.","bot");
 };
 
 input.addEventListener("keypress",e=>{
