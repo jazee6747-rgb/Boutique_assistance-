@@ -1,19 +1,19 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Premium Boutique AI</title>
+<title>Smart Boutique AI</title>
 
 <style>
-:root {
+:root{
   --primary:#d63384;
-  --bg:linear-gradient(135deg,#fdfcfb,#e2d1c3);
+  --light:#fff0f6;
 }
 body{
   margin:0;
   font-family:Segoe UI,sans-serif;
-  background:var(--bg);
+  background:linear-gradient(135deg,#fdfcfb,#e2d1c3);
   height:100vh;
   display:flex;
   justify-content:center;
@@ -21,10 +21,10 @@ body{
 }
 .chat-container{
   width:400px;
-  height:650px;
+  height:680px;
   background:#fff;
   border-radius:20px;
-  box-shadow:0 15px 35px rgba(0,0,0,.15);
+  box-shadow:0 20px 40px rgba(0,0,0,.2);
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -51,27 +51,35 @@ body{
 .msg{
   max-width:85%;
   padding:12px 15px;
-  border-radius:15px;
+  border-radius:16px;
   font-size:14px;
   animation:fade .3s;
 }
 .bot{background:#fff;border:1px solid #eee;align-self:flex-start;}
 .user{background:var(--primary);color:#fff;align-self:flex-end;}
+.typing{font-size:12px;color:#999;font-style:italic}
+
 .product-card{
   border:2px solid #eee;
-  border-radius:12px;
+  border-radius:14px;
   padding:12px;
   margin-top:8px;
   cursor:pointer;
 }
 .product-card:hover{
   border-color:var(--primary);
-  background:#fff0f6;
+  background:var(--light);
 }
+.product-card img{
+  width:100%;
+  border-radius:10px;
+  margin-bottom:6px;
+}
+
 button.option{
   margin:6px 6px 0 0;
-  padding:6px 12px;
-  border-radius:15px;
+  padding:6px 14px;
+  border-radius:20px;
   border:none;
   background:var(--primary);
   color:#fff;
@@ -95,7 +103,7 @@ button.send{
   border-radius:20px;
   background:var(--primary);
   color:#fff;
-  padding:8px 15px;
+  padding:8px 16px;
 }
 @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
 </style>
@@ -105,14 +113,14 @@ button.send{
 
 <div class="chat-container">
   <div class="chat-header">
-    🌸 Boutique Stylist<br>
+    👗 Boutique Stylist AI<br>
     <span class="cart">🛒 Cart: <span id="cartCount">0</span></span>
   </div>
 
   <div id="chat-box"></div>
 
   <div class="input-area">
-    <input id="userInput" placeholder="Type here..." />
+    <input id="userInput" placeholder="Ask me about dresses..." />
     <button class="send" onclick="handleSend()">Send</button>
   </div>
 </div>
@@ -123,15 +131,15 @@ const userInput=document.getElementById("userInput");
 const cartCount=document.getElementById("cartCount");
 
 const inventory=[
- {id:1,name:"Velvet Anarkali",price:"₹4,200",fabric:"Premium Velvet",sizes:["S","M","L","XL"],colors:["Maroon","Black","Green"]},
- {id:2,name:"Silk Party Gown",price:"₹5,500",fabric:"Pure Silk",sizes:["M","L"],colors:["Rose Pink","Gold"]},
- {id:3,name:"Floral Summer Dress",price:"₹2,800",fabric:"Cotton Blend",sizes:["S","M","L"],colors:["Yellow","White","Peach"]}
+ {id:1,name:"Velvet Anarkali",price:"₹4,200",img:"https://via.placeholder.com/300x180?text=Velvet+Anarkali",sizes:["S","M","L","XL"],colors:["Maroon","Black","Green"]},
+ {id:2,name:"Silk Party Gown",price:"₹5,500",img:"https://via.placeholder.com/300x180?text=Silk+Gown",sizes:["M","L"],colors:["Rose Pink","Gold"]},
+ {id:3,name:"Floral Summer Dress",price:"₹2,800",img:"https://via.placeholder.com/300x180?text=Summer+Dress",sizes:["S","M","L"],colors:["Yellow","White","Peach"]}
 ];
 
 let selectedProduct=null;
 let selectedSize=null;
 let cart=[];
-let waitingForOrderId=false;
+let waitingForOrder=false;
 
 function addMessage(text,sender){
   const div=document.createElement("div");
@@ -141,13 +149,29 @@ function addMessage(text,sender){
   chatBox.scrollTop=chatBox.scrollHeight;
 }
 
+function typing(){
+  const t=document.createElement("div");
+  t.className="typing";
+  t.id="typing";
+  t.textContent="Stylist is typing...";
+  chatBox.appendChild(t);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function stopTyping(){
+  const t=document.getElementById("typing");
+  if(t)t.remove();
+}
+
 function showCatalog(){
-  let html="<b>Tap a dress to view details:</b>";
+  let html="<b>✨ Our Exclusive Collection</b>";
   inventory.forEach(p=>{
     html+=`
-      <div class="product-card" onclick="selectProduct(${p.id})">
-        <b>${p.name}</b><br>💰 ${p.price}
-      </div>`;
+    <div class="product-card" onclick="selectProduct(${p.id})">
+      <img src="${p.img}">
+      <b>${p.name}</b><br>
+      💰 ${p.price}
+    </div>`;
   });
   addMessage(html,"bot");
 }
@@ -155,14 +179,12 @@ function showCatalog(){
 function selectProduct(id){
   selectedProduct=inventory.find(p=>p.id===id);
   selectedSize=null;
-  addMessage(`I want <b>${selectedProduct.name}</b>`,"user");
+  addMessage(`I like <b>${selectedProduct.name}</b>`,"user");
 
   setTimeout(()=>{
     addMessage(`
       👗 <b>${selectedProduct.name}</b><br>
-      💰 ${selectedProduct.price}<br>
-      🧵 ${selectedProduct.fabric}<br>
-      🚚 Delivery: 3–5 days<br><br>
+      💰 ${selectedProduct.price}<br><br>
       <b>Select Size:</b><br>
       ${selectedProduct.sizes.map(s=>`<button class="option" onclick="selectSize('${s}')">${s}</button>`).join("")}
     `,"bot");
@@ -176,27 +198,35 @@ function selectSize(size){
   setTimeout(()=>{
     addMessage(`
       <b>Select Color:</b><br>
-      ${selectedProduct.colors.map(c=>`<button class="option" onclick="selectColor('${c}')">${c}</button>`).join("")}
+      ${selectedProduct.colors.map(c=>`<button class="option" onclick="addToCart('${c}')">${c}</button>`).join("")}
     `,"bot");
   },400);
 }
 
-function selectColor(color){
+function addToCart(color){
   addMessage(color,"user");
-  cart.push({product:selectedProduct.name,size:selectedSize,color});
+  cart.push({name:selectedProduct.name,size:selectedSize,color});
   cartCount.textContent=cart.length;
 
   setTimeout(()=>{
-    addMessage(`✅ <b>Added to Cart</b><br>What would you like next?<br><br>
-      <button class="option" onclick="showCatalog()">Continue Shopping</button>
-      <button class="option" onclick="startTracking()">Track Order</button>
+    addMessage(`
+      ✅ Added to Cart!<br><br>
+      <button class="option" onclick="showCatalog()">Shop More</button>
+      <button class="option" onclick="showCart()">View Cart</button>
     `,"bot");
   },400);
 }
 
-function startTracking(){
-  waitingForOrderId=true;
-  addMessage("Please enter your Order ID 📦","bot");
+function showCart(){
+  if(cart.length===0){
+    addMessage("🛒 Your cart is empty","bot");
+    return;
+  }
+  let html="<b>Your Cart:</b><br>";
+  cart.forEach((c,i)=>{
+    html+=`${i+1}. ${c.name} (${c.size}, ${c.color})<br>`;
+  });
+  addMessage(html,"bot");
 }
 
 function handleSend(){
@@ -204,31 +234,37 @@ function handleSend(){
   if(!text)return;
   addMessage(text,"user");
   userInput.value="";
+  typing();
 
   const input=text.toLowerCase();
 
   setTimeout(()=>{
-    if(waitingForOrderId){
-      waitingForOrderId=false;
-      addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`,"bot");
-    }
-    else if(input==="hi"||input==="hello"||input==="hey"){
+    stopTyping();
+
+    if(input.match(/hi|hello|hey/)){
       addMessage("Hey! 👋 What can I help you with today? 💕","bot");
     }
     else if(input.includes("show")||input.includes("collection")){
       showCatalog();
     }
+    else if(input.includes("cart")){
+      showCart();
+    }
     else if(input.includes("track")){
-      startTracking();
+      addMessage("📦 Order tracking will be available soon.","bot");
     }
     else{
-      addMessage("Try: <b>show collection</b> or <b>track order</b>","bot");
+      addMessage("I can help you shop dresses 👗<br>Try <b>show collection</b>","bot");
     }
-  },300);
+  },600);
 }
 
 window.onload=()=>{
-  addMessage("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses.","bot");
+  addMessage(`
+    Hey! 👋 I’m your personal Boutique Stylist 💕<br><br>
+    <button class="option" onclick="showCatalog()">Show Collection</button>
+    <button class="option" onclick="showCart()">View Cart</button>
+  `,"bot");
 };
 
 userInput.addEventListener("keypress",e=>{
