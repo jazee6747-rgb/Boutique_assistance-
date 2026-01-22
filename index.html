@@ -1,188 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Premium Boutique AI Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#d63384;
+  --light:#fff0f6;
+}
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:Segoe UI,sans-serif;
+  background:linear-gradient(135deg,#ffe6f0,#fff);
+}
+.chat{
+  width:400px;
+  max-width:95%;
+  height:650px;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(14px);
+  border-radius:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,.15);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.header{
+  background:var(--primary);
+  color:#fff;
+  padding:15px;
+  text-align:center;
+  font-weight:bold;
+}
+.cart{
+  font-size:12px;
+}
+.messages{
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.msg{
+  max-width:85%;
+  padding:12px 14px;
+  border-radius:15px;
+  animation:fade .3s;
+}
+.bot{background:#fff;border:1px solid #eee;align-self:flex-start;}
+.user{background:var(--primary);color:#fff;align-self:flex-end;}
+.product{
+  border:2px solid #eee;
+  border-radius:12px;
+  padding:10px;
+  cursor:pointer;
+  margin-top:6px;
+}
+.product:hover{border-color:var(--primary);background:var(--light);}
+.btn{
+  padding:6px 12px;
+  border-radius:20px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:12px;
+  margin:5px 5px 0 0;
+  cursor:pointer;
+}
+.input{
+  display:flex;
+  padding:12px;
+  border-top:1px solid #eee;
+}
+input{
+  flex:1;
+  padding:10px;
+  border-radius:20px;
+  border:1px solid #ccc;
+}
+.send{
+  margin-left:8px;
+  border:none;
+  border-radius:20px;
+  background:var(--primary);
+  color:#fff;
+  padding:8px 15px;
+}
+.typing{
+  font-size:12px;
+  opacity:.6;
+}
+@keyframes fade{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1}
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat">
+  <div class="header">
+    🌸 Boutique AI Stylist<br>
+    <span class="cart">🛒 Cart: <span id="cartCount">0</span></span>
+  </div>
+
+  <div class="messages" id="chat"></div>
+
+  <div class="input">
+    <input id="input" placeholder="Type here..." />
+    <button class="send" onclick="send()">Send</button>
+  </div>
+</div>
+
 <script>
-const chatBox = document.getElementById("chat-box");
-const userInput = document.getElementById("userInput");
-const cartCount = document.getElementById("cartCount");
+const chat=document.getElementById("chat");
+const input=document.getElementById("input");
+const cartCount=document.getElementById("cartCount");
 
 const inventory=[
- {id:1,name:"Velvet Anarkali",price:"₹4,200",fabric:"Premium Velvet",sizes:["S","M","L","XL"],colors:["Maroon","Black","Green"]},
- {id:2,name:"Silk Party Gown",price:"₹5,500",fabric:"Pure Silk",sizes:["M","L"],colors:["Rose Pink","Gold"]},
- {id:3,name:"Floral Summer Dress",price:"₹2,800",fabric:"Cotton Blend",sizes:["S","M","L"],colors:["Yellow","White","Peach"]}
+ {id:1,name:"Velvet Anarkali",price:"₹4,200",sizes:["S","M","L"],colors:["Maroon","Black"]},
+ {id:2,name:"Silk Party Gown",price:"₹5,500",sizes:["M","L"],colors:["Gold","Pink"]},
+ {id:3,name:"Floral Summer Dress",price:"₹2,800",sizes:["S","M","L"],colors:["Yellow","White"]}
 ];
 
+let cart=[];
 let selectedProduct=null;
 let selectedSize=null;
-let cart=[];
-let waitingForOrderId=false;
+let waitingOrder=false;
 
-function addMessage(text,sender){
-  const div=document.createElement("div");
-  div.className=`msg ${sender}`;
-  div.innerHTML=text;
-  chatBox.appendChild(div);
-  chatBox.scrollTop=chatBox.scrollHeight;
+function add(text,type){
+  const d=document.createElement("div");
+  d.className=`msg ${type}`;
+  d.innerHTML=text;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
 }
 
-/* ---------------- BASIC INFO ---------------- */
-
-function showBoutiqueInfo(){
-  addMessage(`
-    🏪 <b>About Our Boutique</b><br>
-    🌸 Premium Women's Ethnic & Party Wear<br>
-    📍 Location: Chennai, India<br>
-    🕘 Open: 10 AM – 9 PM (All Days)<br>
-    📞 Support: +91 98765 43210
-  `,"bot");
+function typing(){
+  const t=document.createElement("div");
+  t.className="msg bot typing";
+  t.innerText="Typing...";
+  chat.appendChild(t);
+  chat.scrollTop=chat.scrollHeight;
+  return t;
 }
-
-function showSizeGuide(){
-  addMessage(`
-    📏 <b>Size Guide</b><br>
-    S: Bust 34–36<br>
-    M: Bust 38–40<br>
-    L: Bust 42–44<br>
-    XL: Bust 46–48<br><br>
-    Need help choosing size? Just ask 😊
-  `,"bot");
-}
-
-function showOffers(){
-  addMessage(`
-    🎁 <b>Current Offers</b><br>
-    ✨ Flat 10% OFF on first order<br>
-    🚚 Free Delivery on orders above ₹3,000<br>
-    🎉 Festival Sale coming soon!
-  `,"bot");
-}
-
-function showPolicies(){
-  addMessage(`
-    🚚 <b>Shipping & Returns</b><br>
-    • Delivery in 3–5 working days<br>
-    • 7-day easy return<br>
-    • Exchange available for size issues
-  `,"bot");
-}
-
-/* ---------------- SHOP FLOW ---------------- */
 
 function showCatalog(){
-  let html="<b>Tap a dress to view details:</b>";
+  let html="<b>Our Exclusive Collection:</b>";
   inventory.forEach(p=>{
     html+=`
-      <div class="product-card" onclick="selectProduct(${p.id})">
-        <b>${p.name}</b><br>💰 ${p.price}
-      </div>`;
+    <div class="product" onclick="selectProduct(${p.id})">
+      👗 <b>${p.name}</b><br>💰 ${p.price}
+    </div>`;
   });
-  addMessage(html,"bot");
+  add(html,"bot");
 }
 
 function selectProduct(id){
   selectedProduct=inventory.find(p=>p.id===id);
   selectedSize=null;
-  addMessage(`I want <b>${selectedProduct.name}</b>`,"user");
-
+  add(`I want ${selectedProduct.name}`,"user");
   setTimeout(()=>{
-    addMessage(`
-      👗 <b>${selectedProduct.name}</b><br>
-      💰 ${selectedProduct.price}<br>
-      🧵 ${selectedProduct.fabric}<br>
-      🚚 Delivery: 3–5 days<br>
-      🔁 Easy return<br><br>
+    add(`
+      <b>${selectedProduct.name}</b><br>
+      Price: ${selectedProduct.price}<br><br>
       <b>Select Size:</b><br>
-      ${selectedProduct.sizes.map(s=>`<button class="option" onclick="selectSize('${s}')">${s}</button>`).join("")}
+      ${selectedProduct.sizes.map(s=>`<button class="btn" onclick="selectSize('${s}')">${s}</button>`).join("")}
     `,"bot");
   },400);
 }
 
 function selectSize(size){
   selectedSize=size;
-  addMessage(`Size ${size}`,"user");
-
+  add(size,"user");
   setTimeout(()=>{
-    addMessage(`
+    add(`
       <b>Select Color:</b><br>
-      ${selectedProduct.colors.map(c=>`<button class="option" onclick="selectColor('${c}')">${c}</button>`).join("")}
+      ${selectedProduct.colors.map(c=>`<button class="btn" onclick="addCart('${c}')">${c}</button>`).join("")}
     `,"bot");
   },300);
 }
 
-function selectColor(color){
-  addMessage(color,"user");
-  cart.push({product:selectedProduct.name,size:selectedSize,color});
+function addCart(color){
+  add(color,"user");
+  cart.push({name:selectedProduct.name,size:selectedSize,color});
   cartCount.textContent=cart.length;
-
   setTimeout(()=>{
-    addMessage(`
+    add(`
       ✅ <b>Added to Cart</b><br>
       👗 ${selectedProduct.name}<br>
-      📏 ${selectedSize} | 🎨 ${color}<br>
-      💰 ${selectedProduct.price}<br><br>
-      <button class="option" onclick="showCatalog()">Continue Shopping</button>
-      <button class="option" onclick="startTracking()">Track Order</button>
+      📏 ${selectedSize} | 🎨 ${color}<br><br>
+      <button class="btn" onclick="showCatalog()">Continue Shopping</button>
+      <button class="btn" onclick="track()">Track Order</button>
     `,"bot");
   },400);
 }
 
-function startTracking(){
-  waitingForOrderId=true;
-  addMessage("Please enter your Order ID 📦","bot");
+function track(){
+  waitingOrder=true;
+  add("Please enter your Order ID 📦","bot");
 }
 
-/* ---------------- CHAT LOGIC ---------------- */
-
-function handleSend(){
-  const text=userInput.value.trim();
+function send(){
+  const text=input.value.trim();
   if(!text) return;
-  addMessage(text,"user");
-  userInput.value="";
-  const input=text.toLowerCase();
+  add(text,"user");
+  input.value="";
+  const t=text.toLowerCase();
+  const wait=typing();
 
   setTimeout(()=>{
-    if(waitingForOrderId){
-      waitingForOrderId=false;
-      addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`,"bot");
+    wait.remove();
+
+    if(waitingOrder){
+      waitingOrder=false;
+      add(`🚚 Order <b>${text}</b> is out for delivery!`,"bot");
     }
-    else if(["hi","hello","hey"].includes(input)){
-      addMessage("Hey! 👋 How can I help you today? 💕","bot");
+    else if(t.includes("hi")||t.includes("hello")||t.includes("hey")){
+      add("Hey! 👋 What can I help you with today? 💕","bot");
     }
-    else if(input.includes("collection")||input.includes("dress")){
+    else if(t.includes("show")||t.includes("collection")){
       showCatalog();
     }
-    else if(input.includes("track")){
-      startTracking();
+    else if(t.includes("track")){
+      track();
     }
-    else if(input.includes("cart")){
-      addMessage(`🛒 You have ${cart.length} item(s) in cart`,"bot");
-    }
-    else if(input.includes("size")){
-      showSizeGuide();
-    }
-    else if(input.includes("offer")||input.includes("discount")){
-      showOffers();
-    }
-    else if(input.includes("return")||input.includes("delivery")){
-      showPolicies();
-    }
-    else if(input.includes("about")||input.includes("boutique")){
-      showBoutiqueInfo();
+    else if(t.includes("cart")){
+      add(`🛒 You have ${cart.length} item(s) in your cart.`,"bot");
     }
     else{
-      addMessage(
-        "Sorry 😔 I can only help with <b>boutique-related queries</b> like dresses, sizes, offers, and orders 👗",
-        "bot"
-      );
+      add("Sorry, I only assist with boutique shopping, orders, and collections 💕<br>Try: <b>show collection</b> or <b>track order</b>","bot");
     }
-  },350);
+  },600);
 }
 
 window.onload=()=>{
-  addMessage(
-    "Hey! 👋 Welcome to our Boutique 💕<br><br>Try: <b>show collection</b>, <b>offers</b>, <b>size guide</b>, or <b>track order</b>",
-    "bot"
-  );
+  add("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses.","bot");
 };
 
-userInput.addEventListener("keypress",e=>{
-  if(e.key==="Enter") handleSend();
+input.addEventListener("keypress",e=>{
+  if(e.key==="Enter") send();
 });
 </script>
+
+</body>
+</html>
