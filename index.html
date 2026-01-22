@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -112,7 +112,7 @@ button.send{
   <div id="chat-box"></div>
 
   <div class="input-area">
-    <input id="userInput" placeholder="Type 'show collection'..." />
+    <input id="userInput" placeholder="Type here..." />
     <button class="send" onclick="handleSend()">Send</button>
   </div>
 </div>
@@ -219,8 +219,8 @@ function handleSend(){
       waitingForOrderId=false;
       addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`,"bot");
     }
-    else if(input.includes("hi")||input.includes("hello")){
-      addMessage("Hello! I can help you shop 👗","bot");
+    else if(input.includes("hi")||input.includes("hello")||input.includes("hey")){
+      addMessage("Hey! 👋 What can I help you with today? 💕","bot");
     }
     else if(input.includes("show")||input.includes("collection")){
       showCatalog();
@@ -238,7 +238,7 @@ function handleSend(){
 }
 
 window.onload=()=>{
-  addMessage("Welcome 🌸<br>Type <b>show collection</b> to explore dresses","bot");
+  addMessage("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses or <b>track order</b> to check delivery.", "bot");
 };
 
 userInput.addEventListener("keypress",e=>{
