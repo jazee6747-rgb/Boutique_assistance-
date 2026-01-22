@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -162,12 +162,11 @@ function selectProduct(id){
       👗 <b>${selectedProduct.name}</b><br>
       💰 ${selectedProduct.price}<br>
       🧵 ${selectedProduct.fabric}<br>
-      🚚 Delivery: 3–5 days<br>
-      🔁 Easy 7-day return<br><br>
+      🚚 Delivery: 3–5 days<br><br>
       <b>Select Size:</b><br>
       ${selectedProduct.sizes.map(s=>`<button class="option" onclick="selectSize('${s}')">${s}</button>`).join("")}
     `,"bot");
-  },500);
+  },400);
 }
 
 function selectSize(size){
@@ -188,17 +187,11 @@ function selectColor(color){
   cartCount.textContent=cart.length;
 
   setTimeout(()=>{
-    addMessage(`
-      ✅ <b>Added to Cart</b><br>
-      👗 ${selectedProduct.name}<br>
-      📏 ${selectedSize} | 🎨 ${color}<br>
-      💰 ${selectedProduct.price}<br><br>
-      What would you like to do next?
-      <br><br>
+    addMessage(`✅ <b>Added to Cart</b><br>What would you like next?<br><br>
       <button class="option" onclick="showCatalog()">Continue Shopping</button>
       <button class="option" onclick="startTracking()">Track Order</button>
     `,"bot");
-  },500);
+  },400);
 }
 
 function startTracking(){
@@ -219,7 +212,7 @@ function handleSend(){
       waitingForOrderId=false;
       addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`,"bot");
     }
-    else if(input.includes("hi")||input.includes("hello")||input.includes("hey")){
+    else if(input==="hi"||input==="hello"||input==="hey"){
       addMessage("Hey! 👋 What can I help you with today? 💕","bot");
     }
     else if(input.includes("show")||input.includes("collection")){
@@ -228,80 +221,20 @@ function handleSend(){
     else if(input.includes("track")){
       startTracking();
     }
-    else if(input.includes("cart")){
-      addMessage(`🛒 You have ${cart.length} item(s) in your cart`,"bot");
-    }
     else{
       addMessage("Try: <b>show collection</b> or <b>track order</b>","bot");
     }
-  },400);
+  },300);
 }
 
 window.onload=()=>{
-  addMessage("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses or <b>track order</b> to check delivery.", "bot");
+  addMessage("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses.","bot");
 };
 
 userInput.addEventListener("keypress",e=>{
   if(e.key==="Enter")handleSend();
 });
 </script>
-    <script>
-function handleSend(){
-  const text = userInput.value.trim();
-  if(!text) return;
-
-  addMessage(text, "user");
-  userInput.value = "";
-
-  const input = text.toLowerCase();
-
-  setTimeout(() => {
-
-    // 🔹 If user is tracking an order
-    if(waitingForOrderId){
-      waitingForOrderId = false;
-      addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`, "bot");
-    }
-
-    // 🔹 Greeting response (HI / HELLO / HEY)
-    else if (
-      input === "hi" ||
-      input === "hello" ||
-      input === "hey" ||
-      input.includes("hi ")
-    ) {
-      addMessage(
-        "Hey! 👋 What can I help you with today? 💕<br><br>👉 Type <b>show collection</b> or <b>track order</b>",
-        "bot"
-      );
-    }
-
-    // 🔹 Show collection
-    else if(input.includes("show") || input.includes("collection")){
-      showCatalog();
-    }
-
-    // 🔹 Track order
-    else if(input.includes("track")){
-      startTracking();
-    }
-
-    // 🔹 Cart info
-    else if(input.includes("cart")){
-      addMessage(`🛒 You have ${cart.length} item(s) in your cart`, "bot");
-    }
-
-    // 🔹 Fallback
-    else{
-      addMessage(
-        "I’m here to help 👗<br>Try typing <b>show collection</b> or <b>track order</b>",
-        "bot"
-      );
-    }
-
-  }, 400);
-}
-    </script>
 
 </body>
 </html>
