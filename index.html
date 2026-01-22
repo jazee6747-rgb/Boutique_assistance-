@@ -6,7 +6,7 @@
 <title>Premium Boutique AI</title>
 
 <style>
-:root {
+:root{
   --primary:#d63384;
   --bg:linear-gradient(135deg,#fdfcfb,#e2d1c3);
 }
@@ -36,9 +36,7 @@ body{
   text-align:center;
   font-weight:bold;
 }
-.cart{
-  font-size:12px;
-}
+.cart{font-size:12px;}
 #chat-box{
   flex:1;
   padding:15px;
@@ -118,9 +116,9 @@ button.send{
 </div>
 
 <script>
-const chatBox=document.getElementById("chat-box");
-const userInput=document.getElementById("userInput");
-const cartCount=document.getElementById("cartCount");
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("userInput");
+const cartCount = document.getElementById("cartCount");
 
 const inventory=[
  {id:1,name:"Velvet Anarkali",price:"₹4,200",fabric:"Premium Velvet",sizes:["S","M","L","XL"],colors:["Maroon","Black","Green"]},
@@ -167,7 +165,7 @@ function selectProduct(id){
       <b>Select Size:</b><br>
       ${selectedProduct.sizes.map(s=>`<button class="option" onclick="selectSize('${s}')">${s}</button>`).join("")}
     `,"bot");
-  },500);
+  },400);
 }
 
 function selectSize(size){
@@ -179,7 +177,7 @@ function selectSize(size){
       <b>Select Color:</b><br>
       ${selectedProduct.colors.map(c=>`<button class="option" onclick="selectColor('${c}')">${c}</button>`).join("")}
     `,"bot");
-  },400);
+  },300);
 }
 
 function selectColor(color){
@@ -193,12 +191,11 @@ function selectColor(color){
       👗 ${selectedProduct.name}<br>
       📏 ${selectedSize} | 🎨 ${color}<br>
       💰 ${selectedProduct.price}<br><br>
-      What would you like to do next?
-      <br><br>
+      What would you like to do next?<br><br>
       <button class="option" onclick="showCatalog()">Continue Shopping</button>
       <button class="option" onclick="startTracking()">Track Order</button>
     `,"bot");
-  },500);
+  },400);
 }
 
 function startTracking(){
@@ -209,9 +206,9 @@ function startTracking(){
 function handleSend(){
   const text=userInput.value.trim();
   if(!text)return;
+
   addMessage(text,"user");
   userInput.value="";
-
   const input=text.toLowerCase();
 
   setTimeout(()=>{
@@ -219,26 +216,54 @@ function handleSend(){
       waitingForOrderId=false;
       addMessage(`🔍 Order <b>${text}</b> is <b>Out for Delivery 🚚</b>`,"bot");
     }
-    else if(input.includes("hi")||input.includes("hello")||input.includes("hey")){
-      addMessage("Hey! 👋 What can I help you with today? 💕","bot");
+
+    else if(["hi","hello","hey"].includes(input)){
+      addMessage(
+        "Hey! 👋 What can I help you with today? 💕<br><br>👉 <b>show collection</b> | <b>track order</b>",
+        "bot"
+      );
     }
-    else if(input.includes("show")||input.includes("collection")){
+
+    else if(input.includes("show")||input.includes("collection")||input.includes("dress")){
       showCatalog();
     }
+
     else if(input.includes("track")){
       startTracking();
     }
+
     else if(input.includes("cart")){
-      addMessage(`🛒 You have ${cart.length} item(s) in your cart`,"bot");
+      addMessage(`🛒 You have <b>${cart.length}</b> item(s) in your cart`,"bot");
     }
+
+    else if(
+      input.includes("weather") ||
+      input.includes("joke") ||
+      input.includes("news") ||
+      input.includes("math") ||
+      input.includes("capital") ||
+      input.includes("who")
+    ){
+      addMessage(
+        "Sorry 😔 I can only help with <b>boutique-related queries</b> like dresses, shopping, and order tracking 👗",
+        "bot"
+      );
+    }
+
     else{
-      addMessage("Try: <b>show collection</b> or <b>track order</b>","bot");
+      addMessage(
+        "Sorry 😔 I didn’t understand that.<br><br>👉 Try <b>show collection</b> or <b>track order</b>",
+        "bot"
+      );
     }
-  },400);
+  },350);
 }
 
 window.onload=()=>{
-  addMessage("Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses or <b>track order</b> to check delivery.", "bot");
+  addMessage(
+    "Hey! 👋 What can I help you with today? 💕<br><br>Type <b>show collection</b> to browse dresses or <b>track order</b> to check delivery.",
+    "bot"
+  );
 };
 
 userInput.addEventListener("keypress",e=>{
@@ -248,3 +273,5 @@ userInput.addEventListener("keypress",e=>{
 
 </body>
 </html>
+
+  
